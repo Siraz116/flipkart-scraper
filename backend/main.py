@@ -29,8 +29,28 @@ def main():
         products = scraper.scrape()
         print(f"[INFO] Found {len(products)} products total.")
 
+        if not products:
+            print("[WARNING] No products found! This might indicate:")
+            print("  1. Website structure has changed")
+            print("  2. Anti-bot protection is active")
+            print("  3. Network connectivity issues")
+            print("  4. Search keyword returned no results")
+            return
 
-        
+        # Store products in database
+        print("[INFO] Storing products in database...")
+        success_count = 0
+        for i, product in enumerate(products, 1):
+            try:
+                db.insert_product(product['title'], product['image_url'], product['price'])
+                success_count += 1
+                if i % 10 == 0:  # Progress indicator
+                    print(f"[INFO] Stored {i}/{len(products)} products...")
+            except Exception as e:
+                print(f"[ERROR] Failed to store product {i}: {e}")
+
+        print(f"[SUCCESS] Successfully stored {success_count}/{len(products)} products in database.")
+
     except Exception as e:
         print(f"[ERROR] An error occurred: {e}")
         print("[ERROR] Please check:")
